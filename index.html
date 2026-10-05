@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="description"
+    content="Hub de Classe — Lycée Pierre de Fermat · Devoirs, Forum, Chat et Notices pour les élèves." />
+  <meta name="theme-color" content="#e7fff3" />
+
+  <!-- Configuration PWA iOS (iPhone / iPad) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Fermat Note" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+
+  <title>Fermat Note</title>
+
+  <link rel="manifest" href="manifest.json" />
+
+  <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+
+  <div id="app">
+
+    <header id="top-bar" role="banner">
+      <span id="top-bar__title">Chat de Classe</span>
+
+      <div id="top-bar__actions">
+        <!-- 🔗 Fermat Note — modifier l'URL ci-dessous pour mettre à jour le lien -->
+        <a id="btn-fermat-note"
+           href="https://fermatnote.netlify.app/"
+           target="_blank" rel="noopener noreferrer"
+           class="top-bar__icon-btn"
+           aria-label="Ouvrir Fermat Note"
+           title="Fermat Note">
+          <svg class="fermat-logo-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </a>
+        <button class="top-bar__icon-btn" aria-label="Mon profil" id="btn-profile-avatar"
+          onclick="navigateTo('profil')">
+          <span class="material-symbols-outlined">account_circle</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" role="main">
+
+      <section id="section-devoirs" class="section" role="region" aria-label="Devoirs à faire" style="display:none">
+
+        <div class="page-header">
+          <div class="page-header__text">
+            <h2>Devoirs</h2>
+            <p>Reste à jour sur tes cours</p>
+          </div>
+        </div>
+
+        <div class="section-toggle" role="group" aria-label="Vue">
+          <button id="toggle-devoirs" class="section-toggle__btn section-toggle__btn--active">
+            <span class="material-symbols-outlined">assignment</span>
+            Devoirs
+          </button>
+          <button id="toggle-evaluations" class="section-toggle__btn">
+            <span class="material-symbols-outlined">quiz</span>
+            Évaluations
+          </button>
+        </div>
+
+        <div class="devoirs-stats" id="devoirs-stats-block">
+          <div class="devoirs-stats__row">
+            <span class="devoirs-stats__label">Faits</span>
+            <span class="devoirs-stats__label">
+              <span id="devoirs-stats-faits">0</span>
+              &nbsp;/&nbsp;
+              <span id="devoirs-stats-total">0</span>
+            </span>
+          </div>
+          <div class="devoirs-progress-track">
+            <div class="devoirs-progress-fill" id="devoirs-progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="filter-bar" id="devoirs-filter-bar" role="toolbar" aria-label="Filtrer les devoirs">
+          <button class="filter-btn filter-btn--active devoir-filter-btn" data-filter="tous">
+            <span class="material-symbols-outlined">list</span> Tous
+          </button>
+          <button class="filter-btn filter-btn--inactive devoir-filter-btn" data-filter="en-cours">
+            <span class="material-symbols-outlined">pending</span> En cours
+          </button>
+          <button class="filter-btn filter-btn--inactive devoir-filter-btn" data-filter="faits">
+            <span class="material-symbols-outlined">assignment_turned_in</span> Faits
+          </button>
+        </div>
+
+        <div id="devoirs-feed" role="list" aria-label="Liste des devoirs" aria-live="polite"></div>
+        <div id="evaluations-feed" role="list" aria-label="Évaluations à venir" aria-live="polite" style="display:none">
+        </div>
+
+        <button id="fab-new-devoir" aria-label="Ajouter un devoir" title="Nouveau devoir" style="display:flex">
+          <span class="material-symbols-outlined">add_task</span>
+        </button>
+
+        <div id="modal-new-devoir" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="modal-devoir-title">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <h2 class="modal__title" id="modal-devoir-title">Ajouter un devoir 📚</h2>
+            <div class="form-group">
+              <label class="form-label" for="devoir-matiere">Matière</label>
+              <select class="form-select" id="devoir-matiere">
+                <option value="Mathématiques">📐 Mathématiques</option>
+                <option value="Physique-Chimie">⚗️ Physique-Chimie</option>
+                <option value="SVT">🌿 SVT</option>
+                <option value="SES">📊 SES</option>
+                <option value="Histoire-Géo / HGGSP">🌍 Histoire-Géo / HGGSP</option>
+                <option value="Français / Philo / HLP">📖 Français / Philo / HLP</option>
+                <option value="Anglais (LV1)">🌐 Anglais (LV1)</option>
+                <option value="NSI">💻 NSI</option>
+                <option value="Sciences de l'Ingénieur">⚙️ Sciences de l'Ingénieur</option>
+                <option value="Espagnol / Allemand (LV2)">💬 Espagnol / Allemand (LV2)</option>
+                <option value="Arts / Littérature">🎨 Arts / Littérature</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="devoir-titre">Titre du devoir <span
+                  style="color:var(--color-tertiary-container);">*</span></label>
+              <input class="form-input" type="text" id="devoir-titre" placeholder="Ex : Exercices 4 et 5 page 245"
+                maxlength="100" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="devoir-date">Date limite</label>
+              <input class="form-input" type="date" id="devoir-date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Image du sujet (optionnel)</label>
+              <button id="devoir-attach-btn" type="button" class="btn-cancel"
+                style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-outlined">add_photo_alternate</span> Joindre une photo
+              </button>
+              <input type="file" id="devoir-file-input" accept="image/*"
+                style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true"
+                tabindex="-1" />
+              <div id="devoir-image-preview-wrap"
+                style="display:none; margin-bottom: 0.75rem; padding: 0.5rem; border: 2px solid var(--color-primary); border-radius: var(--radius-xl); background: var(--color-surface-container); text-align: center;">
+                <img id="devoir-preview-img" src=""
+                  style="max-width:100%; max-height:150px; border-radius:var(--radius-lg); object-fit:cover;" />
+              </div>
+            </div>
+            <div class="modal__actions">
+              <button class="btn-cancel" id="btn-cancel-devoir">Annuler</button>
+              <button class="btn-submit" id="btn-submit-devoir"
+                style="background:#3B82F6;color:white;border-color:#064E3B;">
+                <span class="material-symbols-outlined">add_task</span> Ajouter le devoir
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button id="fab-new-eval" aria-label="Ajouter une évaluation" title="Nouvelle évaluation" style="display:none">
+          <span class="material-symbols-outlined">quiz</span>
+        </button>
+
+        <div id="modal-new-eval" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="modal-eval-title">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <h2 class="modal__title" id="modal-eval-title">📝 Nouvelle évaluation</h2>
+            <div class="form-group">
+              <label class="form-label" for="eval-matiere">Matière</label>
+              <select class="form-select" id="eval-matiere">
+                <option value="Mathématiques">📐 Mathématiques</option>
+                <option value="Physique-Chimie">⚗️ Physique-Chimie</option>
+                <option value="SVT">🌿 SVT</option>
+                <option value="SES">📊 SES</option>
+                <option value="Histoire-Géo / HGGSP">🌍 Histoire-Géo / HGGSP</option>
+                <option value="Français / Philo / HLP">📖 Français / Philo / HLP</option>
+                <option value="Anglais (LV1)">🌐 Anglais (LV1)</option>
+                <option value="NSI">💻 NSI</option>
+                <option value="Sciences de l'Ingénieur">⚙️ Sciences de l'Ingénieur</option>
+                <option value="Espagnol / Allemand (LV2)">💬 LV2</option>
+                <option value="Arts / Littérature">🎨 Arts / Littérature</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eval-type">Type d'évaluation</label>
+              <select class="form-select" id="eval-type">
+                <option value="Contrôle">Contrôle</option>
+                <option value="DS">DS (Devoir Surveillé)</option>
+                <option value="Bac Blanc">Bac Blanc</option>
+                <option value="Oral">Oral</option>
+                <option value="Exposé">Exposé</option>
+                <option value="TIPE">TIPE</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eval-sujet">Sujet / Thème (optionnel)</label>
+              <input class="form-input" id="eval-sujet" type="text"
+                placeholder="Ex : Dérivées, Seconde Guerre Mondiale…" maxlength="80" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eval-date">Date de l'évaluation</label>
+              <input class="form-input" id="eval-date" type="date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eval-coefficient">Coefficient (optionnel)</label>
+              <input class="form-input" id="eval-coefficient" type="number" min="1" max="10" step="0.5"
+                placeholder="Ex : 2" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="eval-professeur">Professeur (optionnel)</label>
+              <input class="form-input" id="eval-professeur" type="text" placeholder="Ex : M. Dupont" maxlength="50" />
+            </div>
+            <div class="modal__actions">
+              <button class="btn-secondary" id="btn-cancel-eval">Annuler</button>
+              <button class="btn-primary" id="btn-submit-eval">
+                <span class="material-symbols-outlined">quiz</span> Ajouter l'évaluation
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height: 130px; flex-shrink: 0; width: 100%;"></div>
+      </section>
+
+      <section id="section-courrier" class="section" role="region" aria-label="Courrier International"
+        style="display:none">
+
+        <div class="section-header">
+          <div class="page-header">
+            <div class="page-header__text">
+              <h2>Courrier International</h2>
+              <p>Actualités mondiales pour les élèves</p>
+            </div>
+          </div>
+
+          <div class="filter-bar" role="toolbar" aria-label="Filtrer par catégorie">
+            <button class="filter-btn filter-btn--active courrier-filter-btn" data-cat="tous">
+              <span class="material-symbols-outlined">public</span>Tous
+            </button>
+            <button class="filter-btn filter-btn--inactive courrier-filter-btn" data-cat="Monde">
+              <span class="material-symbols-outlined">language</span>Monde
+            </button>
+          </div>
+        </div>
+
+        <div id="courrier-feed" role="feed" aria-label="Articles de presse" aria-live="polite"></div>
+
+        <div style="height: 130px; flex-shrink: 0; width: 100%;"></div>
+      </section>
+
+      <section id="section-forum" class="section" role="region" aria-label="Forum de la communauté"
+        style="display:none">
+
+        <div class="section-header">
+          <div class="page-header">
+            <div class="page-header__text">
+              <h2>Forum</h2>
+              <p>Pose tes questions, aide les autres</p>
+            </div>
+          </div>
+
+          <div class="filter-bar" role="toolbar" aria-label="Trier les publications">
+            <button class="filter-btn filter-btn--active" data-sort="recent" aria-pressed="true">
+              <span class="material-symbols-outlined">schedule</span> Récents
+            </button>
+            <button class="filter-btn filter-btn--inactive" data-sort="popular" aria-pressed="false">
+              <span class="material-symbols-outlined">local_fire_department</span> Populaires
+            </button>
+          </div>
+        </div>
+
+        <div id="forum-feed" role="feed" aria-label="Publications du forum" aria-live="polite"></div>
+
+        <button id="fab-new-post" aria-label="Poser une nouvelle question" title="Nouvelle question"
+          style="display:flex">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+
+        <div id="modal-new-post" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <h2 class="modal__title" id="modal-title">Poser une question 💬</h2>
+            <div class="form-group">
+              <label class="form-label" for="new-post-titre">Titre de ta question <span
+                  style="color:var(--color-tertiary-container);">*</span></label>
+              <input class="form-input" type="text" id="new-post-titre"
+                placeholder="Ex : Comment résoudre cet exercice de dérivées ?" maxlength="120" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-post-corps">Détails (optionnel)</label>
+              <textarea class="form-textarea" id="new-post-corps" rows="3" placeholder="Ajoute des détails…"
+                maxlength="1000"></textarea>
+            </div>
+
+    <div class="form-group">
+      <button id="forum-attach-btn" type="button" class="btn-cancel" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; width: fit-content;"><span class="material-symbols-outlined">add_photo_alternate</span> Joindre une photo</button>
+      <input type="file" id="forum-file-input" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1" />
+      <div id="forum-image-preview-wrap" style="display:none; margin-bottom: 0.75rem; text-align: center;"><img id="forum-preview-img" src="" style="max-width:100%; max-height:200px; border-radius:var(--radius-lg); object-fit:contain;" /></div>
+    </div>
+            <div class="form-group">
+              <label class="form-label">Catégorie</label>
+              <div class="tag-selector">
+                <button class="tag-option" data-tag="Mathématiques" data-type="matiere">📐 Maths</button>
+                <button class="tag-option" data-tag="Physique-Chimie" data-type="matiere">⚗️ Physique</button>
+                <button class="tag-option" data-tag="SVT" data-type="matiere">🌿 SVT</button>
+                <button class="tag-option" data-tag="SES" data-type="matiere">📊 SES</button>
+                <button class="tag-option" data-tag="Histoire-Géo / HGGSP" data-type="matiere">🌍 Hist-Géo</button>
+                <button class="tag-option" data-tag="Français / Philo / HLP" data-type="matiere">📖 Français</button>
+                <button class="tag-option" data-tag="Anglais (LV1)" data-type="matiere">🌐 Anglais</button>
+                <button class="tag-option" data-tag="NSI" data-type="matiere">💻 NSI</button>
+                <button class="tag-option" data-tag="Sciences de l'Ingénieur" data-type="matiere">⚙️ SI</button>
+                <button class="tag-option" data-tag="Espagnol / Allemand (LV2)" data-type="matiere">💬 LV2</button>
+                <button class="tag-option" data-tag="Arts / Littérature" data-type="matiere">🎨 Arts</button>
+                <button class="tag-option" data-tag="Entraide" data-type="type">🤝 Entraide</button>
+                <button class="tag-option" data-tag="Annonce" data-type="type">📢 Annonce</button>
+                <button class="tag-option" data-tag="Général" data-type="general">💬 Général</button>
+              </div>
+            </div>
+            <div class="modal__actions">
+              <button class="btn-cancel" id="btn-cancel-post">Annuler</button>
+              <button class="btn-submit" id="btn-submit-post">
+                <span class="material-symbols-outlined">send</span> Publier la question
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="modal-forum-replies" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="modal-replies-title">
+          <div class="modal" style="display:flex; flex-direction:column; max-height:85vh; padding:0; overflow:hidden;">
+            <div class="forum-replies-header"
+              style="padding:1.25rem; border-bottom:2px solid var(--color-primary); background:var(--color-surface-container);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+                <span class="badge-primary" id="replies-modal-badge" style="font-size:.7rem;">Entraide</span>
+                <button id="btn-close-replies" aria-label="Fermer"
+                  style="background:none; border:none; cursor:pointer; color:var(--color-on-surface);"><span
+                    class="material-symbols-outlined">close</span></button>
+              </div>
+              <h3 id="replies-modal-titre"
+                style="margin:0; font-size:1.1rem; font-weight:800; color:var(--color-on-surface);">Titre de la question
+              </h3>
+              <p id="replies-modal-corps"
+                style="margin:.5rem 0 0 0; font-size:.9rem; opacity:.85; color:var(--color-on-surface-variant); max-height:80px; overflow-y:auto;">
+                Détails...</p>
+            </div>
+            <div id="forum-replies-list"
+              style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:.75rem; background:var(--color-background);"
+              role="log" aria-label="Réponses"></div>
+            <div style="padding:.75rem 1rem; border-top:2px solid var(--color-primary); background:var(--color-surface-container); display:flex; flex-direction:column; gap:.5rem;">
+              <!-- Preview de l'image sélectionnée -->
+              <div id="forum-reply-img-preview" style="display:none; align-items:center; gap:.5rem; padding:.4rem .6rem; background:var(--color-surface-container-high); border-radius:var(--radius-lg); border:1.5px solid var(--color-primary);">
+                <img id="forum-reply-preview-img" src="" alt="Preview"
+                  style="height:40px; width:40px; border-radius:6px; object-fit:cover; flex-shrink:0;" />
+                <span style="font-size:.78rem; color:var(--color-on-surface-variant); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" id="forum-reply-preview-name"></span>
+                <button id="forum-reply-remove-img" type="button" aria-label="Retirer l'image"
+                  style="background:var(--color-error); border:none; color:white; border-radius:50%; width:20px; height:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.75rem;">
+                  <span class="material-symbols-outlined" style="font-size:.9rem;">close</span>
+                </button>
+              </div>
+              <!-- Barre de saisie -->
+<!-- Barre de saisie -->
+              <div style="display:flex; gap:.5rem; align-items:center;">
+                <!-- 📎 Botó per adjuntar imatge o PDF (amb la dota attach_file) -->
+
+                <input type="text" id="forum-reply-input" placeholder="Écris une réponse..." class="form-input"
+                  style="flex:1; margin:0;" maxlength="500" />
+                <!-- 🚀 Botó d'enviar (amb la icona send) -->
+                <button id="btn-submit-reply" class="btn-submit"
+                  style="flex:none; padding:.6rem 1rem; margin:0; border-radius:999px; width:auto; height:38px;">
+                  <span class="material-symbols-outlined">send</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height: 130px; flex-shrink: 0; width: 100%;"></div>
+      </section>
+
+      <section id="section-chat" class="section active" role="region" aria-label="Chat de classe" style="display:flex">
+
+        <div id="chat-wallpaper">
+          <div id="chat-messages" role="log" aria-label="Messages du chat" aria-live="polite"></div>
+        </div>
+
+        <!-- Barre de réponse (WhatsApp style) — affichée au-dessus de l'input quand on répond -->
+        <div id="chat-reply-preview" class="chat-reply-preview" aria-live="polite">
+          <span class="material-symbols-outlined chat-reply-preview__icon">reply</span>
+          <div class="chat-reply-preview__body">
+            <span class="chat-reply-preview__author" id="chat-reply-author"></span>
+            <span class="chat-reply-preview__snippet" id="chat-reply-snippet"></span>
+          </div>
+          <button class="chat-reply-preview__cancel" id="chat-reply-cancel" aria-label="Annuler la réponse">
+            <span class="material-symbols-outlined" style="font-size:1.1rem">close</span>
+          </button>
+        </div>
+
+        <div class="chat-input-bar">
+          <button id="chat-attach-btn" class="chat-attach-btn" type="button" aria-label="Envoyer une image"
+            title="Envoyer une image">
+            <span class="material-symbols-outlined">attach_file</span>
+          </button>
+          <input type="file" id="chat-file-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple
+            style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true"
+            tabindex="-1" />
+          <textarea id="chat-input" rows="1" placeholder="Écris un message…" aria-label="Message" maxlength="800"
+            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); window.sendChatMessage(); }"></textarea>
+          <button id="chat-send-btn" aria-label="Envoyer" onclick="window.sendChatMessage()">
+            <span class="material-symbols-outlined">send</span>
+          </button>
+        </div>
+
+      </section>
+
+      <section id="section-notices" class="section" role="region" aria-label="Notices du lycée" style="display:none">
+
+        <div class="section-header">
+          <div class="page-header">
+            <div class="page-header__text">
+              <h2>Notices</h2>
+              <p>Alertes &amp; actualités du lycée</p>
+            </div>
+          </div>
+          <div class="filter-bar" role="toolbar" aria-label="Filtrer les notices">
+            <button class="filter-btn filter-btn--active notice-filter-btn" data-filter="tous">
+              <span class="material-symbols-outlined">list</span> Toutes
+            </button>
+            <button class="filter-btn filter-btn--inactive notice-filter-btn" data-filter="urgent">
+              <span class="material-symbols-outlined">campaign</span> Urgentes
+            </button>
+            <button class="filter-btn filter-btn--inactive notice-filter-btn" data-filter="normal">
+              <span class="material-symbols-outlined">info</span> Normales
+            </button>
+          </div>
+        </div>
+
+        <div id="notices-feed" role="feed" aria-label="Notices du lycée" aria-live="polite"></div>
+
+        <button id="fab-new-notice" aria-label="Publier une notice" title="Nouvelle notice" style="display:flex">
+          <span class="material-symbols-outlined">campaign</span>
+        </button>
+
+        <div id="modal-notice-detail" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="detail-modal-titre">
+          <div class="modal" style="padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:80vh;">
+            <div class="notice-detail-header" id="detail-modal-header">
+              <div class="notice-detail-header__top">
+                <div class="notice-detail-icon-wrap">
+                  <span class="material-symbols-outlined" id="detail-modal-icon">campaign</span>
+                </div>
+                <button id="btn-close-detail" aria-label="Fermer">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <div class="notice-detail-meta">
+                <span class="notice-badge" id="detail-modal-badge">Général</span>
+                <span class="notice-badge notice-badge--urgent" id="detail-modal-urgent" hidden>⚠ URGENT</span>
+                <span class="notice-detail-date" id="detail-modal-date"></span>
+              </div>
+              <h2 class="notice-detail-title" id="detail-modal-titre"></h2>
+            </div>
+            <img id="detail-modal-img" src="" style="width:100%; max-height:350px; object-fit:contain; cursor:zoom-in; display:none; margin-bottom:1rem; border-radius:var(--radius-md);" onclick="const lb=document.getElementById('modal-lightbox'),img=document.getElementById('lightbox-img');if(lb&&img){img.src=this.src;lb.style.display='flex';document.body.style.overflow='hidden';}" />
+            <p class="notice-detail-body" id="detail-modal-corps"></p>
+          </div>
+        </div>
+<!-- Modal per publicar una notícia (100% net i sense duplicats) -->
+        <div id="modal-new-notice" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-notice-title">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <h2 class="modal__title" id="modal-notice-title">Publier une notice 📢</h2>
+            
+            <!-- 1. Catégorie -->
+            <div class="form-group">
+              <label class="form-label" for="notice-categorie">Catégorie</label>
+              <select class="form-select" id="notice-categorie">
+                <option>Administration</option>
+                <option>Vie Scolaire</option>
+                <option>Examens</option>
+                <option>Événements</option>
+                <option>Sport</option>
+                <option>Voyages</option>
+              </select>
+            </div>
+
+            <!-- 2. Titre -->
+            <div class="form-group">
+              <label class="form-label" for="notice-titre">Titre <span style="color:var(--color-tertiary-container);">*</span></label>
+              <input class="form-input" type="text" id="notice-titre" placeholder="Ex : Changement de salle…" maxlength="100" autocomplete="off" />
+            </div>
+
+            <!-- 3. Détails / Corps -->
+            <div class="form-group">
+              <label class="form-label" for="notice-corps">Détails</label>
+              <textarea class="form-textarea" id="notice-corps" rows="3" placeholder="Corps complet de l'annonce…" maxlength="800"></textarea>
+            </div>
+
+            <!-- 🎨 4. Couleur de la carte -->
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:1rem;">
+              <label class="form-label" for="notice-color-picker" style="margin:0; display:flex; align-items:center; gap:.375rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem;">palette</span>
+                Couleur de la carte
+              </label>
+              <input type="color" id="notice-color-picker" value="#10B981"
+                style="width:65px; height:40px; border:2px solid var(--color-primary); border-radius:var(--radius-md); cursor:pointer; padding:0; background:none;" />
+            </div>
+
+            <!-- 5. Marquer comme urgente -->
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:.75rem;">
+              <input type="checkbox" id="notice-urgent" style="width:1.25rem;height:1.25rem;accent-color:#F97316;cursor:pointer;" />
+              <label class="form-label" for="notice-urgent" style="margin:0;cursor:pointer;">⚠ Marquer comme urgente</label>
+            </div>
+
+            <!-- Image Notice -->
+            <div class="form-group">
+              <label class="form-label">Image (optionnelle)</label>
+              <button id="notice-attach-btn" type="button" class="btn-cancel" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; width: fit-content;">
+                <span class="material-symbols-outlined">add_photo_alternate</span> Joindre une photo
+              </button>
+              <input type="file" id="notice-file-input" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1" />
+              <div id="notice-image-preview-wrap" style="display:none; margin-bottom: 0.75rem; text-align: center;">
+                <img id="notice-preview-img" src="" style="max-width:100%; max-height:150px; border-radius:var(--radius-lg); object-fit:cover;" />
+              </div>
+            </div>
+
+            <!-- 6. Boutons Actions -->
+            <div class="modal__actions">
+              <button class="btn-cancel" id="btn-cancel-notice">Annuler</button>
+              <button class="btn-submit" id="btn-submit-notice" style="background:#F97316;color:white;border-color:#064E3B;">
+                <span class="material-symbols-outlined">send</span> Publier
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <section id="section-profil" class="section" role="region" aria-label="Mon profil" style="display:none">
+        <div class="page-header">
+          <div class="page-header__text">
+            <h2>Mon Profil</h2>
+            <p>Compte &amp; personnalisation</p>
+          </div>
+        </div>
+
+        <div id="auth-panel">
+          <div class="coming-soon-card" style="text-align:left; padding:1.5rem;">
+            <h3 style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+              <span class="material-symbols-outlined" style="font-size:1.375rem;">person_add</span> Créer un compte
+            </h3>
+            <div class="form-group">
+              <label class="form-label" for="inscription-email">Email</label>
+              <input class="form-input" type="email" id="inscription-email" placeholder="ton.email@exemple.com"
+                autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inscription-mdp">Mot de passe</label>
+              <input class="form-input" type="password" id="inscription-mdp" placeholder="Minimum 6 caractères"
+                autocomplete="new-password" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inscription-code">Code de la classe</label>
+              <input class="form-input" type="text" id="inscription-code" placeholder="Ex : CLASSE2025"
+                autocomplete="off" />
+            </div>
+            <button class="btn-submit" style="width:100%;margin-bottom:1rem;" onclick="creerCompte()">
+              <span class="material-symbols-outlined">person_add</span> Créer mon compte
+            </button>
+            <p id="message-inscription" role="status" style="font-size:.875rem;margin-bottom:1.5rem;"></p>
+
+            <div style="border-top:2px solid var(--color-outline-variant);margin:1rem 0;"></div>
+
+            <h3 style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+              <span class="material-symbols-outlined" style="font-size:1.375rem;">login</span> Se connecter
+            </h3>
+            <div class="form-group">
+              <label class="form-label" for="connexion-email">Email</label>
+              <input class="form-input" type="email" id="connexion-email" placeholder="ton.email@exemple.com"
+                autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="connexion-mdp">Mot de passe</label>
+              <input class="form-input" type="password" id="connexion-mdp" placeholder="Ton mot de passe"
+                autocomplete="current-password" />
+            </div>
+            <button class="btn-submit" style="width:100%;" onclick="connexion()">
+              <span class="material-symbols-outlined">login</span> Se connecter
+            </button>
+            <p id="message-connexion" role="status" style="font-size:.875rem;margin-top:.75rem;"></p>
+          </div>
+        </div>
+
+        <div id="user-panel" hidden>
+          <div class="profil-hero">
+            <div class="profil-avatar-wrap">
+              <div id="profil-avatar-slot"><span class="profil-avatar profil-avatar--lg">?</span></div>
+              <button class="profil-avatar-edit" id="profil-avatar-btn" aria-label="Changer l'avatar">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+            </div>
+            <h2 class="profil-hero-name" id="profil-name">Chargement...</h2>
+            <p class="profil-hero-sub">Lycée Pierre de Fermat</p>
+            <span class="profil-uid-chip">
+              <span class="material-symbols-outlined">badge</span> ID&nbsp;<span id="profil-uid-short">&mdash;</span>
+            </span>
+          </div>
+
+          <div class="profil-card">
+            <div class="profil-card__header"><span class="material-symbols-outlined">id_card</span> Carte d'identité
+              scolaire</div>
+            <div class="profil-identity">
+              <div class="profil-field">
+                <span class="profil-field-label">Nom complet</span>
+                <div class="profil-nom-edit">
+                  <input type="text" id="profil-nom-input" class="profil-nom-input" placeholder="Prénom Nom"
+                    maxlength="40" autocomplete="name" />
+                  <button id="btn-save-nom" class="profil-nom-save-btn" title="Enregistrer le nom"><span
+                      class="material-symbols-outlined">check</span></button>
+                </div>
+              </div>
+              <div class="profil-field"><span class="profil-field-label">Adresse e-mail</span><span
+                  class="profil-field-value" id="profil-email">&mdash;</span></div>
+              <div class="profil-field"><span class="profil-field-label">Classe</span><span
+                  class="profil-field-value profil-field-value--badge">Première</span></div>
+            </div>
+          </div>
+
+          <div class="profil-card">
+            <div class="profil-card__header"><span class="material-symbols-outlined">palette</span> Couleur
+              d'accentuation</div>
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:1rem; margin-top:0.5rem;">
+              <input type="color" id="profil-accent-input" value="#10B981"
+                style="width:65px; height:40px; border:2px solid var(--color-primary); border-radius:var(--radius-md); cursor:pointer; padding:0; background:none;" />
+              <span class="form-label" style="margin:0; font-size:0.85rem; color:var(--color-on-surface-variant);">Choisis la couleur d'accentuation de l'application</span>
+            </div>
+          </div>
+
+          <div class="profil-card">
+            <div class="profil-card__header"><span class="material-symbols-outlined">chat</span> Couleur de mes messages
+            </div>
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:1rem; margin-top:0.5rem;">
+              <input type="color" id="profile-bubble-color-input" value="#10B981"
+                style="width:65px; height:40px; border:2px solid var(--color-primary); border-radius:var(--radius-md); cursor:pointer; padding:0; background:none;" />
+              <span class="form-label" style="margin:0; font-size:0.85rem; color:var(--color-on-surface-variant);">Choisis la couleur exacte de tes bulles de chat</span>
+            </div>
+          </div>
+
+          <div class="profil-card profil-card--row">
+            <div class="profil-card__header"><span class="material-symbols-outlined"
+                id="dark-mode-icon">dark_mode</span> Mode Sombre</div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-dark-mode" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+
+          <div class="profil-card">
+            <div class="profil-card__header"><span class="material-symbols-outlined">database</span> Stockage &amp; Limites</div>
+            <p style="font-size:0.8rem; color:var(--color-on-surface-variant); line-height:1.4; margin:0;">
+              Pense à supprimer régulièrement les anciennes photos ou à privilégier des liens externes (Google Drive) pour les gros documents afin de ne pas saturer les quotas gratuits de la classe.
+            </p>
+          </div>
+
+          <button class="profil-signout-btn" id="profil-signout">
+            <span class="material-symbols-outlined">logout</span> Se déconnecter
+          </button>
+
+          <!-- Annuaire des élèves -->
+          <div class="student-directory" id="student-directory">
+            <div class="student-directory__header">
+              <span class="material-symbols-outlined">group</span>
+              Annuaire de la classe
+            </div>
+            <div class="student-directory__list" id="student-directory-list">
+              <div class="student-directory__loading">Chargement de l'annuaire…</div>
+            </div>
+          </div>
+
+          <div style="height: 100px; flex-shrink: 0;"></div>
+        </div>
+
+        <div id="modal-avatar" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="modal-avatar-title">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <h2 class="modal__title" id="modal-avatar-title">Choisir un avatar 👤</h2>
+            <div class="avatar-presets">
+              <button class="avatar-preset" data-id="preset-1" data-initials="JM" data-color="#10B981"
+                style="background:#10B981">JM</button>
+              <button class="avatar-preset" data-id="preset-2" data-initials="TD" data-color="#3B82F6"
+                style="background:#3B82F6">TD</button>
+              <button class="avatar-preset" data-id="preset-3" data-initials="CR" data-color="#F97316"
+                style="background:#F97316">CR</button>
+              <button class="avatar-preset" data-id="preset-4" data-initials="AB" data-color="#8B5CF6"
+                style="background:#8B5CF6">AB</button>
+              <button class="avatar-preset" data-id="preset-5" data-initials="LM" data-color="#EC4899"
+                style="background:#EC4899">LM</button>
+            </div>
+            <div class="avatar-divider">ou téléverse ta photo</div>
+            <label for="avatar-file-input" class="avatar-upload-zone" id="avatar-upload-label" role="button"
+              tabindex="0">
+              <span class="material-symbols-outlined">photo_library</span>
+              <span class="avatar-upload-zone__text">Choisir depuis la galerie</span>
+            </label>
+            <input type="file" id="avatar-file-input" accept="image/*"
+              style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true"
+              tabindex="-1" />
+
+            <div id="avatar-preview-wrap" class="avatar-preview-wrap" style="display:none">
+              <img id="avatar-preview" src="" alt="Prévisualisation" class="avatar-preview-img" />
+              <span id="avatar-upload-name" class="avatar-upload-name"></span>
+            </div>
+
+            <div class="modal__actions">
+              <button class="btn-cancel" id="btn-cancel-avatar">Annuler</button>
+              <button class="btn-submit" id="btn-confirm-avatar" style="background:#10B981;color:white;">
+                <span class="material-symbols-outlined">check</span> Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal informations étudiant (délégué seulement) -->
+        <div id="modal-student-detail" class="modal-backdrop" role="dialog" aria-modal="true"
+          aria-labelledby="student-modal-name">
+          <div class="modal">
+            <div class="modal__handle" aria-hidden="true"></div>
+            <div class="student-modal__header">
+              <div class="student-modal__avatar" id="student-modal-avatar" style="background:#10B981">?</div>
+              <span class="student-modal__name" id="student-modal-name">Élève</span>
+            </div>
+            <div class="student-modal__info-grid">
+              <div class="student-modal__info-row">
+                <span class="student-modal__info-label">Nom complet</span>
+                <span class="student-modal__info-value" id="student-modal-nom">—</span>
+              </div>
+              <div class="student-modal__info-row">
+                <span class="student-modal__info-label">Identifiant (UID)</span>
+                <span class="student-modal__info-value" id="student-modal-uid">—</span>
+              </div>
+              <div class="student-modal__info-row">
+                <span class="student-modal__info-label">Adresse e-mail</span>
+                <span class="student-modal__info-value" id="student-modal-email">—</span>
+              </div>
+            </div>
+            <div class="student-modal__actions">
+              <button class="student-modal__action-btn student-modal__action-btn--block" id="btn-block-student">
+<span class="material-symbols-outlined">block</span> Voter pour bannir (<span id="ban-vote-count">0</span>/10)
+              </button>
+            </div>
+            <div class="modal__actions" style="margin-top:1rem;">
+              <button class="btn-cancel" id="btn-close-student-modal">Fermer</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <nav id="bottom-nav" role="navigation" aria-label="Navigation principale">
+      <div class="bottom-nav__inner">
+        <button class="nav-tab" id="tab-devoirs" onclick="navigateTo('devoirs')">
+          <span class="nav-tab__icon material-symbols-outlined">assignment</span>
+          <span class="nav-tab__label">Devoirs</span>
+        </button>
+        <button class="nav-tab" id="tab-forum" onclick="navigateTo('forum')">
+          <span class="nav-tab__icon material-symbols-outlined">forum</span>
+          <span class="nav-tab__label">Forum</span>
+        </button>
+        <button class="nav-tab active" id="tab-chat" onclick="navigateTo('chat')">
+          <span class="nav-tab__icon material-symbols-outlined">chat</span>
+          <span class="nav-tab__label">Chat</span>
+          <span class="nav-badge" id="badge-chat" hidden></span>
+        </button>
+        <button class="nav-tab" id="tab-notices" onclick="navigateTo('notices')">
+          <span class="nav-tab__icon material-symbols-outlined">campaign</span>
+          <span class="nav-tab__label">Notices</span>
+        </button>
+        <button class="nav-tab" id="tab-courrier" onclick="navigateTo('courrier')">
+          <span class="nav-tab__icon material-symbols-outlined">newspaper</span>
+          <span class="nav-tab__label">Courrier</span>
+          <span class="nav-badge" id="badge-courrier" hidden></span>
+        </button>
+        <button class="nav-tab" id="tab-profil" onclick="navigateTo('profil')">
+          <span class="nav-tab__icon material-symbols-outlined">account_circle</span>
+          <span class="nav-tab__label">Profil</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- LIGHTBOX : Visionneuse d'images plein écran -->
+  <div id="modal-lightbox" role="dialog" aria-modal="true" aria-label="Image en grand" style="display:none;">
+    <button id="lightbox-close" aria-label="Fermer"
+      style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:2.5rem;height:2.5rem;color:#fff;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <img id="lightbox-img" src="" alt=""
+      style="max-width:95vw;max-height:90vh;object-fit:contain;border-radius:0.75rem;box-shadow:0 8px 40px rgba(0,0,0,0.6);" />
+  </div>
+
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module">
+    import { auth, db } from "./firebase.js";
+    import { initForum, destroyForum } from "./forum.js";
+    import { initDevoirs, destroyDevoirs } from "./devoirs.js";
+    import { initChat, destroyChat } from "./chat.js";
+    import { initNotices, destroyNotices } from "./notices.js";
+    import { initCourrier, destroyCourrier } from "./courrier.js";
+    import {
+      initProfil, destroyProfil,
+      restoreAccent, restoreDarkMode
+    } from "./profil.js";
+    import {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged,
+      updateProfile,
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    import {
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+    restoreAccent();
+    restoreDarkMode();
+
+    window._activeSection = "chat";
+
+    window.notifyBadge = (id) => {
+      const badge = document.getElementById(`badge-${id}`);
+      if (badge) badge.removeAttribute("hidden");
+    };
+    window.clearBadge = (id) => {
+      const badge = document.getElementById(`badge-${id}`);
+      if (badge) badge.setAttribute("hidden", "");
+    };
+
+    let activeSection = "chat";
+
+    window.navigateTo = function (id) {
+      const ALL_SECTIONS = ["devoirs", "courrier", "forum", "chat", "notices", "profil"];
+      if (id === activeSection) return;
+
+      document.querySelectorAll(`#section-${activeSection} .modal-backdrop.open`)
+        .forEach(m => m.classList.remove("open"));
+
+      if (activeSection === "forum") destroyForum();
+      if (activeSection === "devoirs") destroyDevoirs();
+      if (activeSection === "chat") destroyChat();
+      if (activeSection === "notices") destroyNotices();
+      if (activeSection === "courrier") destroyCourrier();
+      if (activeSection === "profil") destroyProfil();
+
+      ALL_SECTIONS.forEach(sid => {
+        const el = document.getElementById(`section-${sid}`);
+        if (!el) return;
+        if (sid === id) {
+          el.style.display = "flex";
+          el.classList.add("active");
+        } else {
+          el.style.display = "none";
+          el.classList.remove("active");
+        }
+      });
+
+      ALL_SECTIONS.forEach(sid => {
+        const tab = document.getElementById(`tab-${sid}`);
+        if (!tab) return;
+        if (sid === id) {
+          tab.classList.add("active");
+          tab.setAttribute("aria-selected", "true");
+        } else {
+          tab.classList.remove("active");
+          tab.setAttribute("aria-selected", "false");
+        }
+      });
+
+      const titles = {
+        devoirs: "Devoirs",
+        forum: "Lycée Pierre de Fermat",
+        chat: "Chat de Classe",
+        notices: "Notices & Alertes",
+        courrier: "Courrier International",
+        profil: "Mon Profil",
+      };
+      document.getElementById("top-bar__title").textContent = titles[id] ?? "Hub de Classe";
+      document.getElementById(`section-${id}`)?.scrollTo(0, 0);
+
+      activeSection = id;
+      window._activeSection = id;
+      window.clearBadge?.(id);
+
+      if (id === "forum") initForum();
+      if (id === "devoirs") initDevoirs();
+      if (id === "chat") initChat();
+      if (id === "notices") initNotices();
+      if (id === "courrier") initCourrier();
+      if (id === "profil") initProfil();
+    };
+
+    const CODE_SECRET_ELEVE = "FermatNotes@Fermat022";
+    const CODE_SECRET_DELEGUE = "FermatNotes@Fermat022DELEGUE";
+
+    onAuthStateChanged(auth, async (user) => {
+      const authPanel = document.getElementById("auth-panel");
+      const userPanel = document.getElementById("user-panel");
+
+      if (user) {
+        // ── Vérification blocage du compte ──
+        try {
+          const statusSnap = await getDoc(doc(db, "user_status", user.uid));
+          if (statusSnap.exists() && statusSnap.data().blocked === true) {
+            await signOut(auth);
+            const msgEl = document.getElementById("message-connexion");
+            if (msgEl) {
+              msgEl.textContent = "🚫 Tu as été expulsé de la classe.";
+              msgEl.style.color = "var(--color-error)";
+            }
+            return; // Arrêter ici — ne pas afficher le panel user
+          }
+        } catch (err) {
+          console.warn("[auth] Impossible de vérifier le statut du compte:", err);
+        }
+
+        authPanel?.setAttribute("hidden", "");
+        userPanel?.removeAttribute("hidden");
+
+        (async () => {
+          try {
+            const userDocRef = doc(db, "utilisateurs", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            let nomComplet = "";
+
+            if (userDocSnap.exists()) {
+              nomComplet = userDocSnap.data().nomComplet;
+            }
+
+            let savedBubbleColor = userDocSnap.exists() ? (userDocSnap.data().bubbleColor || "#10B981") : "#10B981";
+            localStorage.setItem("fermat-bubble-color", savedBubbleColor);
+
+            const bInput = document.getElementById("profile-bubble-color-input");
+            if (bInput) bInput.value = savedBubbleColor;
+
+            bInput?.removeEventListener("change", bInput._handler);
+            bInput._handler = async (e) => {
+              const chosenColor = e.target.value;
+              localStorage.setItem("fermat-bubble-color", chosenColor);
+              await setDoc(doc(db, "utilisateurs", user.uid), { bubbleColor: chosenColor }, { merge: true });
+            };
+            bInput?.addEventListener("change", bInput._handler);
+
+            if (nomComplet) {
+              if (user.displayName !== nomComplet) {
+                await updateProfile(user, { displayName: nomComplet });
+                const profNameEl = document.getElementById("profil-name");
+                if (profNameEl) profNameEl.textContent = nomComplet;
+                const profNomInput = document.getElementById("profil-nom-input");
+                if (profNomInput && !profNomInput._dirty) profNomInput.value = nomComplet;
+              }
+            } else {
+              const fallbackNom = user.displayName || user.email?.split("@")[0]?.replace(/[._]/g, " ") || "Élève de Pierre de Fermat";
+              const savedRole = localStorage.getItem("fermat-signup-role") || "eleve";
+              await setDoc(userDocRef, { nomComplet: fallbackNom, classe: "Première", role: savedRole }, { merge: true });
+              localStorage.removeItem("fermat-signup-role");
+              if (!user.displayName) {
+                await updateProfile(user, { displayName: fallbackNom });
+              }
+            }
+          } catch (err) {
+            console.error("Error synchronizing profile nomComplet:", err);
+          }
+        })();
+      } else {
+        authPanel?.removeAttribute("hidden");
+        userPanel?.setAttribute("hidden", "");
+      }
+    });
+
+    window.creerCompte = async function () {
+      const email = document.getElementById("inscription-email").value.trim();
+      const mdp = document.getElementById("inscription-mdp").value;
+      const code = document.getElementById("inscription-code").value.trim();
+      const msgEl = document.getElementById("message-inscription");
+
+      msgEl.textContent = "";
+      msgEl.style.color = "var(--color-primary)";
+
+      if (code !== CODE_SECRET_ELEVE && code !== CODE_SECRET_DELEGUE) {
+        msgEl.textContent = "❌ Code secret incorrect.";
+        msgEl.style.color = "var(--color-error)";
+        return;
+      }
+      const userRole = (code === CODE_SECRET_DELEGUE) ? "delegue" : "eleve";
+      localStorage.setItem("fermat-signup-role", userRole);
+
+
+      msgEl.textContent = "⏳ Création du compte…";
+      try {
+        const { user } = await createUserWithEmailAndPassword(auth, email, mdp);
+        const initialNom = email.split("@")[0].replace(/[._]/g, " ");
+        await updateProfile(user, { displayName: initialNom });
+        await setDoc(doc(db, "utilisateurs", user.uid), {
+          nomComplet: initialNom,
+          classe: "Première",
+          role: userRole
+        }, { merge: true });
+
+        msgEl.textContent = "✅ Compte créé ! Bienvenue 🎉";
+        setTimeout(() => navigateTo("chat"), 1500);
+      } catch (err) {
+        const msgs = {
+          "auth/email-already-in-use": "❌ Cet email est déjà utilisé.",
+          "auth/invalid-email": "❌ Email invalide.",
+          "auth/weak-password": "❌ Mot de passe trop court (6 caractères min).",
+        };
+        msgEl.textContent = msgs[err.code] ?? `❌ Erreur : ${err.message}`;
+        msgEl.style.color = "var(--color-error)";
+      }
+    };
+
+    window.connexion = async function () {
+      const email = document.getElementById("connexion-email").value.trim();
+      const mdp = document.getElementById("connexion-mdp").value;
+      const msgEl = document.getElementById("message-connexion");
+
+      msgEl.textContent = "⏳ Connexion…";
+      msgEl.style.color = "var(--color-primary)";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, mdp);
+        msgEl.textContent = "✅ Connecté !";
+        setTimeout(() => navigateTo("chat"), 800);
+      } catch (err) {
+        const msgs = {
+          "auth/user-not-found": "❌ Aucun compte avec cet email.",
+          "auth/wrong-password": "❌ Mot de passe incorrect.",
+          "auth/invalid-email": "❌ Email invalide.",
+          "auth/invalid-credential": "❌ Email ou mot de passe incorrect.",
+        };
+        msgEl.textContent = msgs[err.code] ?? `❌ Erreur : ${err.message}`;
+        msgEl.style.color = "var(--color-error)";
+      }
+    };
+
+
+    window.seDeconnecter = async function () {
+      try {
+        localStorage.clear();
+        if (window.caches) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        await signOut(auth);
+        window.location.href = "/index.html";
+      } catch (err) {
+        console.error("Erreur lors de la déconnexion :", err);
+        window.location.reload();
+      }
+    };
+
+    initChat();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").then((reg) => {
+        reg.update();
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "activated" && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        });
+      }).catch(() => { });
+
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        window.location.reload();
+      });
+    }
+
+    (function () {
+      const sections = ["section-notices", "section-forum", "section-courrier"];
+
+      sections.forEach(secId => {
+        const sec = document.getElementById(secId);
+        if (!sec) return;
+        const hdr = sec.querySelector(".section-header");
+        if (!hdr) return;
+
+        let prev = 0;
+        let ticking = false;
+
+        sec.addEventListener("scroll", function () {
+          if (!ticking) {
+            requestAnimationFrame(function () {
+              const cur = sec.scrollTop;
+              const delta = Math.abs(cur - prev);
+              if (delta > 15) {
+                if (cur > prev && cur > 50) {
+                  hdr.classList.add("header--hidden");
+                } else {
+                  hdr.classList.remove("header--hidden");
+                }
+                prev = Math.max(0, cur);
+              }
+              ticking = false;
+            });
+            ticking = true;
+          }
+        }, { passive: true });
+      });
+    })();
+
+  </script>
+
+</body>
+
+</html>
+
